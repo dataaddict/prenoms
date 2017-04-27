@@ -1,0 +1,17 @@
+@font-face {
+  font-family: 'HelveticaLTStd-Bold';
+  src:
+    url('../fonts/HelveticaLTStd-Bold.woff2') format('woff2'),
+    url('../fonts/HelveticaLTStd-Bold.woff') format('woff');
+  font-style: normal;
+  font-weight: bold;
+}
+
+@font-face {
+  font-family: 'HelveticaLTStd-Roman';
+  src:
+    url('../fonts/HelveticaLTStd-Roman.woff2') format('woff2'),
+    url('../fonts/HelveticaLTStd-Roman.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}

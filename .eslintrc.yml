@@ -1,0 +1,17 @@
+extends:
+  - standard
+  - vue
+plugins:
+  - standard
+  - promise
+  - vue
+rules:
+  no-new: off
+  indent: warn
+  no-trailing-spaces: warn
+  no-unused-vars: warn
+  object-curly-spacing: warn
+  padded-blocks: warn
+  space-before-function-paren: warn
+  no-multiple-empty-lines: warn
+  camelcase: warn

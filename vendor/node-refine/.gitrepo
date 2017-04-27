@@ -1,0 +1,11 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = ubyy:git/node-refine
+	branch = master
+	commit = aba52a720958c7e2907db6b00c43400b58d75282
+	parent = 33bad8ac812124862314e950abd11789aeff46d9
+	cmdver = 0.3.1
