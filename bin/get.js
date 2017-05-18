@@ -1,5 +1,5 @@
 const refine = require('node-refine')
-const { saveJSON } = require('./lib/data-file')
+const { saveJSON } = require('./services/data-file')
 
 refine
   .load('prenoms')
