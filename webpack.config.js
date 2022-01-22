@@ -53,7 +53,7 @@ module.exports = {
           use: 'css-loader?sourceMap!stylus-loader'
         })
       },
-        // { test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: 'url-loader?limit=10000&mimetype=application/font-woff' },
+      // { test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: 'url-loader?limit=10000&mimetype=application/font-woff' },
       {
         test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
         loader: 'url-loader'
@@ -71,9 +71,9 @@ module.exports = {
   // devtool: '#eval-source-map',
   plugins: [
     new ExtractTextPlugin('application.css'),
-    new HtmlWebpackPlugin({ template: 'src/index.pug', inject: false }),
+    new HtmlWebpackPlugin({ template: 'src/index.html', inject: false }),
     new CopyWebpackPlugin([
-      { from: 'src/data/forenames.json' }
+      { from: 'src/data.json' }
       // { context: 'src/fonts/',
       //   from: '*.{woff,woff2}',
       //   to: 'fonts'
