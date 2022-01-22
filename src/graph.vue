@@ -89,26 +89,7 @@ export default {
   mounted () {
     this.svg = d3.select(this.$refs.svg)
 
-    this.$el.addEventListener('mouseenter', () => {
-      console.log('mouseenter')
-
-      this.popup.show = this.names.length > 0
-
-      this.svg
-        .selectAll('.circles > g')
-        .attr('visibility', 'visible')
-    }, true)
-
-    this.$el.addEventListener('mouseleave', () => {
-      console.log('mouseleave')
-      this.popup.show = false
-      this.svg
-        .selectAll('.circles > g')
-        .attr('visibility', 'hidden')
-    }, true)
-
-    this.$el.addEventListener('mousemove', (evt) => {
-      console.log('mousemove')
+    const showCurrentCircle = (evt) => {
       if (!this.popup.show) return
 
       const x = evt.clientX - this.$refs.svg.getBoundingClientRect().left
@@ -117,7 +98,23 @@ export default {
       this.svg
         .selectAll('.circles > g')
         .attr('visibility', d => d.year === this.currentYear ? 'visible' : 'hidden')
+    }
+
+    this.$el.addEventListener('mouseenter', evt => {
+      this.popup.show = this.names.length > 0
+
+      showCurrentCircle(evt)
     }, true)
+
+    this.$el.addEventListener('mouseleave', evt => {
+      this.popup.show = false
+
+      this.svg
+        .selectAll('.circles > g')
+        .attr('visibility', 'hidden')
+    }, true)
+
+    this.$el.addEventListener('mousemove', showCurrentCircle, true)
 
     window.onresize = this.onresize.bind(this)
 
