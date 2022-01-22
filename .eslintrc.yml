@@ -1,17 +1,47 @@
 extends:
   - standard
-  - vue
+  - plugin:vue/recommended
+
 plugins:
   - standard
   - promise
   - vue
+
+env:
+  mocha: true
+
+root: false
+
+parserOptions:
+  ecmaVersion: 2018
+
 rules:
-  no-new: off
-  indent: warn
-  no-trailing-spaces: warn
-  no-unused-vars: warn
-  object-curly-spacing: warn
-  padded-blocks: warn
-  space-before-function-paren: warn
+  array-bracket-spacing: 0
+  brace-style: warn
+  camelcase: 0
+
+  indent:
+    - warn
+    - 2
+    - SwitchCase: 1
+      MemberExpression: 1
+
+  eol-last: warn
+  no-debugger: warn
+  no-multi-spaces: warn
   no-multiple-empty-lines: warn
-  camelcase: warn
+  no-return-assign: warn
+  no-trailing-spaces: warn
+  no-unreachable: warn
+  no-unused-vars: warn
+  object-curly-spacing: [warn, always]
+  one-var: warn
+  padded-blocks: warn
+  semi: warn
+  space-before-function-paren: warn
+  space-in-parens: warn
+  space-infix-ops: warn
+  standard/object-curly-even-spacing: [warn, always]
+
+  vue/max-attributes-per-line: off
+  # object-curly-spacing: warn
