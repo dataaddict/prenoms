@@ -1,6 +1,8 @@
-# prenoms dataaddict
+# prénoms dataaddict
 
-https://www.insee.fr/fr/statistiques/2540004
+live version is located at https://dataaddict.fr/prenoms/
+
+dataset is located at https://www.insee.fr/fr/statistiques/2540004
 
 #### how to build:
 
@@ -9,7 +11,7 @@ npm install
 npm run build
 ```
 
-compiled code is located in build/
+compiled code is located at build/
 
 #### how to develop
 
