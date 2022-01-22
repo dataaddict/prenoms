@@ -1,3 +1,160 @@
+<template lang="pug">
+#app
+  content
+    .left-side
+      .title
+        h2 De 1929 à 2019 :
+        h1 90 ans de prénoms en France
+      form.search
+        input(type="text" autocomplete="off" placeholder="Recherche..." v-model="searchQuery")
+        img.search-image(src="./images/search.png")
+        a.clear(href="#" v-show="searchQuery.length" @click="searchQuery = ''")
+          img(src="./images/clear.png")/
+      .names-list-container
+        ul.names-list(ref="namesList")
+          li(v-for="nameData in displayedNames",
+            :class="[nameData.sex, nameData.selected ? 'selected' : '']",
+            :style="nameStyle(nameData)",
+            :title="nameData.alternateNames ? 'autres orthographes: ' + nameData.alternateNames.join(', ') : null",
+            v-text="nameData.name"
+            @click.prevent="toggleName(nameData)"
+          )
+    .right-side
+      graph(
+        :names="selectedNames",
+        @name:remove="toggleName",
+        @year-range="setYearRange"
+      )
+      .bottom
+        .block
+          .share-url
+            div Partagez ces résultats avec ce lien :
+            input(ref="share-url" type="text" @click="selectUrl", :value="shareUrl")
+          .social-links
+            iframe(src="https://www.facebook.com/plugins/share_button.php?href=http%3A%2F%2Fdataaddict.fr%2Fprenoms%2F&layout=button_count&size=large&mobile_iframe=true&appId=388906134841894&width=120&height=28" width="120" height="28" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowTransparency="true")
+            a.twitter-share-button(href="https://twitter.com/share" data-size="large" data-via="_Data_Addict_" data-lang="fr" data-hashtags="70ansdeprénoms")
+            a.github-button(href="https://github.com/dataaddict/prenoms" data-style="mega" aria-label="Star dataaddict/prenoms on GitHub") Star
+        .explanations
+          | Les prénoms sélectionnés sont les plus courants en France, ils ont été donnés au moins 2000 fois entre 1929 et 2019. Source :
+          a(href="https://www.insee.fr/fr/statistiques/2540004" target="_blank") Insee - Fichier des prénoms (Édition 2016)
+</template>
+
+<script>
+import { nameColor, initialRange, maxBirthsCount, years } from './utils'
+import * as d3 from 'd3'
+import _ from 'lodash'
+import graph from './graph.vue'
+
+export default {
+  name: 'App',
+
+  components: { graph },
+
+  data () {
+    return {
+      names: [],
+      shareUrl: window.location.toString(),
+      searchQuery: '',
+      range: initialRange
+    }
+  },
+
+  computed: {
+    selectedNames () {
+      return _.filter(this.names, 'selected')
+    },
+
+    displayedNames () {
+      if (this.searchQuery === '') return this.names
+
+      const sanitize = s => _.deburr(s).toLowerCase()
+      const q = sanitize(this.searchQuery)
+
+      return this.names.filter(({ name, alternateNames = [] }) =>
+        _([name, ...alternateNames])
+          .map(sanitize)
+          .some(name => name.includes(q))
+      )
+    }
+  },
+
+  watch: {
+    names: 'refreshYearRange',
+    selectedNames (names) {
+      window.location.hash = names.map(d => d.id + '-' + d.sex).join(',')
+      this.shareUrl = window.location.toString()
+    }
+  },
+
+  mounted () {
+    const selectedIds = _.flatMap(window.location.hash.slice(1).split(','), id => /-[hf]$/.test(id) ? [id] : [id + '-f', id + '-h'])
+
+    d3.json('data.json', (err, names) => {
+      if (err) return window.alert(err)
+
+      _.each(names, nameData => {
+        nameData.selected = _.includes(selectedIds, nameData.id + '-' + (nameData.sex === 'm' ? 'h' : 'f'))
+        nameData.style = {}
+        nameData.births = _.map(years, (year, i) => ({ year, births: nameData.births[i] }))
+      })
+
+      this.names = names
+      this.$nextTick(window.onresize)
+    })
+  },
+
+  methods: {
+    toggleName (nameData) {
+      nameData.selected = !nameData.selected
+    },
+
+    setYearRange (range) {
+      this.range = range
+      this.refreshYearRange()
+    },
+
+    refreshYearRange () {
+      const overvallMax = maxBirthsCount(this.names, this.range)
+
+      const fontSizeScale = d3
+        .scalePow()
+        .exponent(0.8)
+        .domain([0, overvallMax])
+        .range([16, 40])
+
+      _(this.names)
+        .each(nameData => {
+          // const [fontSize, lineHeight] = sizes[level]
+          const fontSize = fontSizeScale(maxBirthsCount([nameData], this.range)) + 'px'
+          nameData.style = { fontSize }
+        })
+    },
+
+    nameStyle (nameData) {
+      const backgroundColor = nameData.selected ? nameColor(nameData) : ''
+      return _.assign({ backgroundColor }, nameData.style)
+    },
+
+    // selectUrl () {
+    //   // http://stackoverflow.com/a/1173319
+    //   const el = this.$refs['share-url']
+    //
+    //   if (document.selection) {
+    //     var range = document.body.createTextRange()
+    //     range.moveToElementText(el)
+    //     range.select()
+    //   } else if (window.getSelection) {
+    //     const range = document.createRange()
+    //     range.selectNode(el)
+    //     window.getSelection().addRange(range)
+    //   }
+    // }
+    selectUrl () {
+      this.$refs['share-url'].select()
+    }
+  }
+}
+</script>
 <style lang="stylus">
 @import "./css/colors"
 
@@ -75,12 +232,12 @@ form.search
     right: 0
     text-decoration: none
 
-.forenames-list-container
+.names-list-container
   flex: 1
   overflow scroll
   margin-top 10px
 
-ul.forenames-list
+ul.names-list
   list-style none
   padding 0
   margin 0
@@ -93,7 +250,7 @@ ul.forenames-list
     line-height 0.9
     display: inline-flex
     align-items: center
-    &.m
+    &.h
       color color-male
     &.f
       color color-female
@@ -134,158 +291,3 @@ ul.forenames-list
   .explanations
     margin-top: 1em
 </style>
-
-<template lang="pug">
-#app
-  content
-    .left-side
-      .title
-        h2 De 1945 à 2015 :
-        h1 70 ans de prénoms en France
-      form.search
-        input(type="text" autocomplete="off" placeholder="Recherche..." v-model="searchQuery")
-        img.search-image(src="./images/search.png")
-        a.clear(href="#" v-show="searchQuery.length" @click="searchQuery = ''")
-          img(src="./images/clear.png")/
-      .forenames-list-container
-        ul.forenames-list(ref="forenamesList")
-          li(v-for="forenameData in displayedForenames",
-            :class="[forenameData.sex, forenameData.selected ? 'selected' : '']",
-            :style="forenameStyle(forenameData)",
-            :title="forenameData.alternatives ? 'autres orthographes: ' + forenameData.alternatives.join(', ') : null",
-            v-text="forenameData.forename"
-            @click.prevent="toggleForename(forenameData)"
-          )
-    .right-side
-      graph(
-        :forenames="selectedForenames",
-        @forename:remove="toggleForename",
-        @year-range="setYearRange"
-      )
-      .bottom
-        .block
-          .share-url
-            div Partagez ces résultats avec ce lien :
-            input(ref="share-url" type="text" @click="selectUrl", :value="shareUrl")
-          .social-links
-            iframe(src="https://www.facebook.com/plugins/share_button.php?href=http%3A%2F%2Fdataaddict.fr%2Fprenoms%2F&layout=button_count&size=large&mobile_iframe=true&appId=388906134841894&width=120&height=28" width="120" height="28" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowTransparency="true")
-            a.twitter-share-button(href="https://twitter.com/share" data-size="large" data-via="_Data_Addict_" data-lang="fr" data-hashtags="70ansdeprénoms")
-            a.github-button(href="https://github.com/dataaddict/prenoms" data-style="mega" aria-label="Star dataaddict/prenoms on GitHub") Star
-        .explanations
-          | Les prénoms sélectionnés sont les plus courants en France, ils ont été donnés au moins 2000 fois entre 1945 et 2015. Source :
-          a(href="https://www.insee.fr/fr/statistiques/2540004" target="_blank") Insee - Fichier des prénoms (Édition 2016)
-</template>
-
-<script>
-import { forenameColor, initialRange, maxBirthsCount, years } from './utils'
-import * as d3 from 'd3'
-import _ from 'lodash'
-import graph from './graph.vue'
-
-export default {
-  name: 'app',
-  components: { graph },
-  data () {
-    return {
-      forenames: [],
-      shareUrl: window.location.toString(),
-      searchQuery: '',
-      range: initialRange
-    }
-  },
-  mounted () {
-    console.log('mounted')
-    const selectedIds = _.flatMap(window.location.hash.slice(1).split(','), id => /-[hf]$/.test(id) ? [id] : [id + '-f', id + '-h'])
-
-    d3.json('forenames.json', (err, forenames) => {
-      // window.data = data
-      // window._ = _
-      if (err) return window.alert(err)
-
-      console.log('loaded', forenames.length)
-
-      _.each(forenames, forenameData => {
-        forenameData.selected = _.includes(selectedIds, forenameData.id + '-' + (forenameData.sex === 'm' ? 'h' : 'f'))
-        forenameData.style = {}
-        forenameData.births = _.map(years, (year, i) => ({ year, births: forenameData.births[i] }))
-      })
-
-      this.forenames = forenames
-      this.$nextTick(window.onresize)
-    })
-  },
-
-  watch: {
-    forenames: 'refreshYearRange',
-    selectedForenames (forenames) {
-      window.location.hash = forenames.map(d => d.id + '-' + (d.sex === 'm' ? 'h' : 'f')).join(',')
-      this.shareUrl = window.location.toString()
-    }
-  },
-
-  methods: {
-    toggleForename (forenameData) {
-      forenameData.selected = !forenameData.selected
-    },
-
-    setYearRange (range) {
-      this.range = range
-      this.refreshYearRange()
-    },
-
-    refreshYearRange () {
-      console.log('refreshYearRange')
-      const overvallMax = maxBirthsCount(this.forenames, this.range)
-
-      const fontSizeScale = d3
-        .scalePow()
-        .exponent(0.8)
-        .domain([0, overvallMax])
-        .range([16, 40])
-
-      _(this.forenames)
-        .each(forenameData => {
-          // const [fontSize, lineHeight] = sizes[level]
-          const fontSize = fontSizeScale(maxBirthsCount([forenameData], this.range)) + 'px'
-          forenameData.style = { fontSize }
-        })
-    },
-
-    forenameStyle (forenameData) {
-      const backgroundColor = forenameData.selected ? forenameColor(forenameData) : ''
-      return _.assign({ backgroundColor }, forenameData.style)
-    },
-
-    // selectUrl () {
-    //   // http://stackoverflow.com/a/1173319
-    //   const el = this.$refs['share-url']
-    //
-    //   if (document.selection) {
-    //     var range = document.body.createTextRange()
-    //     range.moveToElementText(el)
-    //     range.select()
-    //   } else if (window.getSelection) {
-    //     const range = document.createRange()
-    //     range.selectNode(el)
-    //     window.getSelection().addRange(range)
-    //   }
-    // }
-    selectUrl () {
-      this.$refs['share-url'].select()
-    }
-  },
-
-  computed: {
-    selectedForenames () {
-      return _.filter(this.forenames, 'selected')
-    },
-    displayedForenames () {
-      if (this.searchQuery === '') return this.forenames
-      const sanitize = s => _.deburr(s).toLowerCase()
-      const q = sanitize(this.searchQuery)
-
-      return this.forenames.filter(d => sanitize(d.forename).includes(q))
-    }
-  }
-}
-</script>
