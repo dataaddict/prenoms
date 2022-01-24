@@ -6,7 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "NODE_ENV=development webpack-dev-server",
     "build": "rm -fr build/ && NODE_ENV=production webpack --progress --hide-modules",
-    "deploy": "npm run build && aws --profile perso s3 sync --acl public-read --delete build/ s3://dataaddict.fr/prenoms/",
+    "deploy": "npm run build && aws --profile perso s3 sync --acl public-read --cache-control 'max-age=30' --delete build/ s3://dataaddict.fr/prenoms/",
     "fonts": "ttf2woff src/fonts/HelveticaLTStd-Bold.otf src/fonts/HelveticaLTStd-Bold.woff && ttf2woff src/fonts/HelveticaLTStd-Roman.otf src/fonts/HelveticaLTStd-Roman.woff && ttf2woff2 < src/fonts/HelveticaLTStd-Bold.otf > src/fonts/HelveticaLTStd-Bold.woff2 && ttf2woff2 < src/fonts/HelveticaLTStd-Roman.otf > src/fonts/HelveticaLTStd-Roman.woff2",
     "build-data": "node build-data.js"
   },
